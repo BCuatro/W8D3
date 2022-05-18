@@ -9,7 +9,20 @@ if (typeof window === 'undefined'){
  * and two white pieces at [3, 3] and [4, 4]
  */
 function _makeGrid () {
-}
+
+  const grid = new Array(8);
+
+  for(let i = 0; i < grid.length; i++) {
+    grid[i] = Array(8);
+  }
+  
+  grid[3][4] = new Piece("black");
+  grid[4][3] = new Piece("black");
+  grid[3][3] = new Piece("white");
+  grid[4][4] = new Piece("white");
+
+  return grid;
+};
 
 /**
  * Constructs a Board with a starting grid set up.
@@ -28,6 +41,13 @@ Board.DIRS = [
  * Checks if a given position is on the Board.
  */
 Board.prototype.isValidPos = function (pos) {
+  let x = pos[0];
+  let y = pos[1];
+  if ((x < 0 || x > 7) || (y < 0 || y > 7)) {
+    return false;
+  } else{
+    return true;
+  }
 };
 
 /**
@@ -35,19 +55,39 @@ Board.prototype.isValidPos = function (pos) {
  * throwing an Error if the position is invalid.
  */
 Board.prototype.getPiece = function (pos) {
+  let x = Number(pos[0]);
+  let y = Number(pos[1]); // "1,2" or [1,2]
+
+  if(!this.isValidPos(pos)) {
+    throw new Error("Not valid pos!");
+  } 
+  if(this.grid[x][y] instanceof Object) {
+    return this.grid[x][y];
+  } else{
+    return undefined;
+  }
 };
+
 
 /**
  * Checks if the piece at a given position
  * matches a given color.
  */
 Board.prototype.isMine = function (pos, color) {
+  let piece = this.getPiece(pos)
+
+  if (piece) return piece.color === color;
 };
 
 /**
  * Checks if a given position has a piece on it.
  */
 Board.prototype.isOccupied = function (pos) {
+  if (this.getPiece(pos)) {
+    return true;
+  } else {
+    return false;
+  }
 };
 
 /**
@@ -64,7 +104,29 @@ Board.prototype.isOccupied = function (pos) {
  * Returns empty array if no pieces of the opposite color are found.
  */
 Board.prototype._positionsToFlip = function(pos, color, dir, piecesToFlip){
-};
+
+
+  let x= pos[0]+dir[0];
+  let y= pos[1]+dir[1];
+  let next_pos =[x,y]
+
+
+  if (!piecesToFlip){
+    piecesToFlip= []
+
+  } else{
+    piecesToFlip.push(pos)
+  }
+
+    if(!this.isValidPos(next_pos)){
+      return [];
+    } else if(!this.isOccupied(next_pos)) {
+      return [];
+    } else if (this.getPiece(next_pos).color===color){
+      return piecesToFlip;
+    } 
+     return this._positionsToFlip(next_pos,color,dir,piecesToFlip)
+  };
 
 /**
  * Checks that a position is not already occupied and that the color
